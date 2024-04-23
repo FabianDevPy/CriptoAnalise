@@ -1,0 +1,10 @@
+/venv
+venv
+*.db
+*.csv
+__pycache__
+/market
+market
+*.json
+*coinbase*.*
+main.py

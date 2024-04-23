@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dados de Criptomoedas</title>
+        <script type="text/javascript"
+            src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+        <link rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.4/jquery-confirm.min.css">
+        <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.4/jquery-confirm.min.js"></script>
+        <link
+            href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css"
+            rel="stylesheet">
+
+        <link rel="stylesheet" href="../static/style.css">
+        <!-- <link rel="stylesheet" type="text/css"
+            href="../static/Filterable-Dual-List/bala.DualSelectList/css/bala.DualSelectList.css"> -->
+
+        <!-- <script type="text/javascript"
+            src="../static/Filterable-Dual-List/bala.DualSelectList/js/bala.DualSelectList.jquery.js"></script> -->
+        <!-- <script type="text/javascript" src="../static/dualList.js.js"></script> -->
+        <!-- <script> -->
+        <!-- fetch("/criptolist")
+                .then(response => response.json())
+                .then(cripto_data => {
+                    console.log(cripto_data);
+                    // dsl.setCandidate(cripto_data);   
+                    console.log(`Criptomoedas carregadas: ${cripto_data.length}`); 
+                    for (var i = 0; i < cripto_data.length; i++) {
+                    let item = `<option value="html">${cripto_data[i]}</option>`
+                    console.log(item);
+                    $("#to").append(item)
+                    }                    
+                 }) -->
+        <!-- </script> -->
+    </head>
+
+    <body class="dark bg-gray-100 dark:bg-gray-800">
+        <div class="container">
+            <div id="header" class="flex items-center justify-between mb-6 mt-4">
+
+                <h1 class="text-2xl font-semibold">📊</h1>
+
+                <div class="flex items-center space-x-2 gap-5">
+                    <!--  -->
+                    <button type="button" class="btn btn-secondary"
+                        data-toggle="tooltip" data-placement="top"
+                        title="Atualizar">
+                        <span class="reload">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32"
+                                height="32" viewBox="0 0 24 24">
+                                <g fill="none"
+                                    stroke="currentColor" stroke-linecap="round"
+                                    stroke-linejoin="round" stroke-width="2">
+                                    <path
+                                        d="M20 11a8.1 8.1 0 0 0-6.986-6.918A8.1 8.1 0 0 0 4.995 8M4 13a8.1 8.1 0 0 0 15 3" />
+                                    <path
+                                        d="M18 16a1 1 0 1 0 2 0a1 1 0 1 0-2 0M4 8a1 1 0 1 0 2 0a1 1 0 1 0-2 0m5 4a3 3 0 1 0 6 0a3 3 0 1 0-6 0" />
+                                </g>
+                            </svg>
+                        </span>
+                    </button>
+                    <!--  -->
+                    <div data-toggle="tooltip" data-placement="top"
+                        title="Trocar Tema">
+                        <div class="flex items-center space-x-2">
+                            <label class="cursor-pointer">
+                                <input type="checkbox" class="toggle-checkbox"
+                                    id="themeToggle">
+                                <span class="toggle-label">
+                                    <span class="dark:text-white"
+                                        id="darkLabel"></span>
+                                    <span class="light:text-black"
+                                        id="lightLabel"></span>
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                    <!--  -->
+                </div>
+            </div>
+
+            <div class="tabs">
+                <div class="tab active"
+                    data-tab="tab1">Tabela de Criptomoedas</div>
+
+                <div class="tab inactive"
+                    data-tab="tab2">Análise</div>
+
+                <div class="tab inactive"
+                    data-tab="tab3">Ajustes</div>
+            </div>
+
+            <div class="tab-content">
+
+                <div id="tab1" class="content active">
+                    <div class="container">
+                        <div id="cover"
+                            class="flex items-center justify-center h-20">
+                            <h1 class="text_cover text-center">Dados de
+                                Criptomoedas</h1>
+                        </div>
+                        <div class="tab-content">
+                            <div id="cards-tab"
+                                class="tab-pane fade show active"></div>
+                            <div id="table-tab" class="tab-pane fade">
+                                <div class="max-w-4xl mx-auto">
+                                    <table class="table-auto w-full">
+                                        <thead>
+                                            <tr>
+                                                <th>Data</th>
+                                                <th>Hora</th>
+                                                <th>Label</th>
+                                                <th>Nome</th>
+                                                <th>Preço</th>
+                                                <th>Variação (%)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dados-criptomoedas">
+                                            <!-- Os dados serão preenchidos aqui -->
+
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tab2" class="content hidden">
+                    <div id="cards"></div>
+                </div>
+
+                <div id="tab3" class="content hidden">
+                    Content for Tab 3
+                    <div class="container">
+                        <style>
+                          .dual-list .list-group {
+                            margin-top: 8px;
+                        }
+                        
+                        .list-left li, .list-right li {
+                            cursor: pointer;
+                        }
+                        
+                        .list-arrows {
+                            padding-top: 100px;
+                        }
+                        
+                        .list-arrows button {
+                            margin-bottom: 20px;
+                        }
+                        
+                        </style>
+
+                        <br />
+
+                        <div class="row flex justify-center">
+                            <style>
+                                select {
+                                    width: 200px;
+                                    float: left;
+                                    min-height: 200px;
+                                    font-size: 14px;
+                                    line-height: 20px;
+                                }
+                                .controls {
+                                    width: 130px;
+                                    float: left;
+                                    margin: 10px;
+                                }
+                                .controls a {
+                                    background-color: #2199e8;
+                                    border-radius: 4px;
+                                    border: 0px solid #000;
+                                    color: #ffffff;
+                                    padding: 10px;
+                                    font-size: 12px;
+                                    text-decoration: none;
+                                    display: inline-block;
+                                    text-align: center;
+                                    margin: 5px;
+                                    width: 100px;
+                                    font-family: 'open sans';
+                                }
+                            </style>
+
+                            <form name="selection" method="post"
+                                onSubmit="return selectAll(event)">
+
+                                <select multiple size="10" id="from"> </select>
+
+                                <div class="controls">
+                                    <a
+                                        href="javascript:moveSelected('from', 'to')">
+                                        Move Item &gt;</a>
+                                    <a
+                                        href="javascript:moveSelected('to', 'from')">&lt;
+                                        Move Item</a>
+                                    <a
+                                        href="javascript:moveAll('from', 'to')">Move
+                                        All &gt;&gt;</a>
+                                    <a href="javascript:moveAll('to', 'from')"
+                                        href="#">&lt;&lt; Move All</a>
+                                </div>
+
+                                <select multiple id="to" size="10"
+                                    name="topics[]">
+                                </select>
+
+                                <div class="list-arrows col-md-1 text-center">
+                                    <button class="btn btn-default btn-sm move-left">
+                                        <span class="glyphicon glyphicon-chevron-left"></span>
+                                    </button>
+
+                                    <button
+                                        class="btn btn-default btn-sm move-right">
+                                        <span
+                                            class="glyphicon glyphicon-chevron-right"></span>
+                                    </button>
+                                </div>
+
+                                <div class="dual-list list-right col-md-5">
+                                    <div class="well">
+                                        <div class="row">
+                                            <div class="col-md-2">
+                                                <div class="btn-group">
+                                                    <a
+                                                        class="btn btn-default selector"
+                                                        title="select all"><i
+                                                            class="glyphicon glyphicon-unchecked"></i></a>
+                                                </div>
+                                            </div>
+                                            <!-- <div class="col-md-10">
+                                                    <div class="input-group">
+                                                        <input type="text"
+                                                            name="SearchDualList"
+                                                            class="form-control"
+                                                            placeholder="search" />
+                                                        <span
+                                                            class="input-group-addon glyphicon glyphicon-search"></span>
+                                                    </div>
+                                                </div>
+                                            </div> -->
+                                            <ul class="list-group"
+                                                id="DualList">
+
+                                            </ul>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <!-- <div id="dualSelectExample" style="width:500px; height:300px; background-color:#F0F0F0; padding:10px;"></div><br> -->
+                                <div class="flex justify-center w-full m-3">
+                                    <button type="submit"                                       
+                                        class="bg-violet-500 hover:bg-violet-700 text-white font-bold py-2 px-4 border border-violet-700 rounded">
+                                        Salvar
+                                    </button>
+                                </div>
+
+                            </form>
+                            
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="scroll-indicator">
+                    <div class="text">
+                        <span>⬇</span><span>Rolar</span><span>⬆</span>
+                    </div>
+                </div>
+
+                <div class="loading">
+                    <div id="overlay">
+                        <div class="cv-spinner">
+                            <span class="spinner"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <footer>
+                    <div id="footer"
+                        class="flex justify-center p-10  text-white">
+                        <p class="text-center">© 2024 - Todos os direitos
+                            reservados.</p>
+                    </footer>
+
+                    <!-- <script
+                        src="https://code.jquery.com/jquery-3.6.0.min.js"></script> -->
+                    <script src="../static/script.js"
+                        type="text/javascript"></script>
+
+                    <script src="../static/tabs.js"></script>
+                    <script src="../static/datalist.js"></script>
+
+                </body>
+            </html>

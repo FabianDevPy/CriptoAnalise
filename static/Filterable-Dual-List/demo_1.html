@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta content="text/html; charset=UTF-8">
+	<title>DualSelectList example</title>
+	<link rel="stylesheet" type="text/css" href="bala.DualSelectList/css/bala.DualSelectList.css">
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+	<script type="text/javascript" src="bala.DualSelectList/js/bala.DualSelectList.jquery.js"></script>
+	<script type="text/javascript" src="../static/dualList.js.js"></script>
+
+</head>
+
+<body>
+	<div>This is the example of jQuery plugin Dual-Select-List, which provids multiple-select function through 2 List-Boxes.</div><br>
+
+	<div id="dualSelectExample" style="width:500px; height:300px; background-color:#F0F0F0; padding:10px;"></div><br>
+
+	<div style="padding-bottom:20px;">
+		Set Color:
+		<select id="colorSelector">
+			<option value="panelBackground">panelBackground</option>
+			<option value="filterText">filterText</option>
+			<option value="itemText">itemText</option>
+			<option value="itemBackground">itemBackground</option>
+			<option value="itemHoverBackground">itemHoverBackground</option>
+			<option value="itemPlaceholderBackground">itemPlaceholderBackground</option>
+			<option value="itemPlaceholderBorder">itemPlaceholderBorder</option>
+			<option value="">All Objects</option>
+		</select>
+		<input id="colorValue" value="" style="width:130px; margin-right:20px;" />
+		<input type="button" id="setColor" value="Set" />
+		<input type="button" id="resetColor" value="Reset" />
+	</div>
+
+	<div style="float:left; margin-right:5px;">
+		<div id="addSel" style="background-color:lightgray; color:black; padding:5px; text-align:center; cursor:pointer; width:150px;">Add Candidate</div>
+		<textarea id="addIterms" rows="5" type="textarea" style="width:250px; height:100px; margin-top:5px;"></textarea>
+	</div>
+	<div style="float:left;">
+		<div id="getSel" style="background-color:lightgray; color:black; padding:5px; text-align:center; cursor:pointer; width:150px; float:left;">Get Selection</div>
+		<div style="background-color:none; margin-left: 10px; margin-top: 5px; width:100px; float:left;">
+			<input id="strOnly" type="checkbox">String Only</input>
+		</div><br>
+		<textarea id="selResult" rows="5" type="textarea" style="width:250px; height:100px; margin-top:5px;"></textarea>
+	</div>
+</body>
+
+</html>
