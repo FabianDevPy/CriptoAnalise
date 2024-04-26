@@ -258,6 +258,6 @@ $(document).ready(function () {
   });
 
   atualizarTabela(tabela, tab2);
-  scroll();
-  drag();
+  // scroll();
+  // drag();
 });

@@ -1,12 +1,15 @@
 import sqlite3
 import aiosqlite
 from traceback import print_exc
-
+import os
+global CURRENT_DIRECTORY
+CURRENT_DIRECTORY= os.path.dirname(os.path.abspath(__file__))
+db = os.path.join(CURRENT_DIRECTORY, 'criptomoedas.db')
 
 async def get_cripto_list(lista_de_criptomoedas=None):
     try:
         # Conectar ao banco de dados de forma assíncrona
-        async with aiosqlite.connect('criptomoedas.db') as conn:
+        async with aiosqlite.connect(db) as conn:
             await conn.execute('''
                 CREATE TABLE IF NOT EXISTS Cripto_list (
                 ID INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -37,7 +40,7 @@ async def get_cripto_list(lista_de_criptomoedas=None):
 def criar_banco():
     try:
         # Conectar ao banco de dados (será criado se não existir)
-        with sqlite3.connect('criptomoedas.db') as conn:
+        with sqlite3.connect(db) as conn:
             cursor = conn.cursor()
 
             # Criar a tabela para todas as criptomoedas
@@ -56,7 +59,7 @@ def criar_banco():
 
     
         # Conectar ao banco de dados (será criado se não existir)
-        with sqlite3.connect('criptomoedas.db') as conn:
+        with sqlite3.connect(db) as conn:
             cursor = conn.cursor()
 
             # Criar a tabela para todas as criptomoedas
@@ -80,7 +83,7 @@ def criar_banco():
 
 def inserir_dados(criptomoeda, dados):
     try:
-        with sqlite3.connect('criptomoedas.db') as conn:
+        with sqlite3.connect(db) as conn:
             cursor = conn.cursor()
 
             # Inserir os dados na tabela de Criptomoedas
@@ -109,7 +112,7 @@ async def get_cripto_analise(data):
     
     try:
         # Conectar ao banco de dados de forma assíncrona
-        async with aiosqlite.connect('criptomoedas.db') as conn:           
+        async with aiosqlite.connect(db) as conn:           
 
             # Checar se a criptomoeda já existe na tabela
             cursor = await conn.execute('SELECT * FROM Estatisticas WHERE Nome = ?', (data['Name'],))

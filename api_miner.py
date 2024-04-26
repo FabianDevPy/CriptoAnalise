@@ -4,8 +4,11 @@ from models import inserir_dados, get_cripto_analise
 from script import limpar_banco, criar_banco
 import asyncio
 import json
+import os
 
-    
+global CURRENT_DIRECTORY 
+CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
+   
 def fetch_data(url):
     try:
         response = requests.get(url)
@@ -29,7 +32,7 @@ async def process_data(markets: list, criptomoedas: list = None):
     lista_de_criptomoedas: list = criptomoedas or []  
       
     try:
-        with open('lista_de_criptomoedas.json', 'r') as _lc:
+        with open(os.path.join(CURRENT_DIRECTORY, 'lista_de_criptomoedas.json'), 'r') as _lc:
             lista_de_criptomoedas = json.load(_lc)
         
             
@@ -37,15 +40,15 @@ async def process_data(markets: list, criptomoedas: list = None):
         print(e)
         
         _lc_filtrada: list = ["Bitcoin", "Ethereum", "Solana", "Polkadot", "Stellar", "Tether", "Dogecoin", "Dai", "Cardano", "Litecoin", "Chainlink", "Binance USD", "Polygon"]
-        with open('lista_de_criptomoedas.json', 'w') as _lc:
+        with open(os.path.join(CURRENT_DIRECTORY, 'lista_de_criptomoedas.json'), 'w') as _lc:
             json.dump(_lc_filtrada, _lc)
     try:
-        with open('lista_de_criptomoedas_disponiveis.json', 'r') as _lcd:
+        with open(os.path.join(CURRENT_DIRECTORY, 'lista_de_criptomoedas_disponiveis.json'), 'r') as _lc:
             print("Lista de criptomoedas disponiveis: ")
     except Exception as e:
         print(e)
         lista_de_criptomoedas: list = await get_lista_de_criptomoedas(markets)
-        with open('lista_de_criptomoedas_disponiveis.json', 'w') as _lc:
+        with open(os.path.join(CURRENT_DIRECTORY, 'lista_de_criptomoedas_disponiveis.json'), 'w') as _lc:
             json.dump(lista_de_criptomoedas, _lc)
         
     for crypto in markets:

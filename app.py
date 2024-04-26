@@ -7,6 +7,10 @@ import time
 import datetime
 from datetime import timezone, timedelta
 import json
+import os
+
+global CURRENT_DIRECTORY
+CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__)
 
@@ -16,13 +20,13 @@ def dashboard():
 
 @app.route("/criptolist")
 def criptolist():
-    with open('lista_de_criptomoedas.json', 'r') as f:
+    with open(os.path.join(CURRENT_DIRECTORY, 'lista_de_criptomoedas.json'), 'r') as f:
         criptomoedas = json.load(f)
     return jsonify(criptomoedas)
 
 @app.route("/criptodiponivel")
 def criptodiponivel():
-    with open('lista_de_criptomoedas_disponiveis.json', 'r') as f:
+    with open(os.path.join(CURRENT_DIRECTORY, 'lista_de_criptomoedas_disponiveis.json'), 'r') as f:
         criptomoedas = json.load(f)
     return jsonify(criptomoedas)
 
@@ -31,7 +35,7 @@ def editarlista():
     try:
         lista = request.get_json()
         print("lista: ", lista)
-        with open('lista_de_criptomoedas.json', 'w') as f:
+        with open(os.path.join(CURRENT_DIRECTORY, 'lista_de_criptomoedas.json'), 'w') as f:
             json.dump(lista, f)
         return jsonify({'status': 'ok'})
 
@@ -46,8 +50,7 @@ def demo1():
 def analise(criptomoeda):
     # criptomoeda = request.args.get('criptomoeda') 
     try:
-        with sqlite3.connect('criptomoedas.db') as conn:
-            registro_dict={}
+        with sqlite3.connect(os.path.join(CURRENT_DIRECTORY, 'criptomoedas.db')) as conn:
             cursor = conn.cursor()
             cursor.execute(f"SELECT * FROM estatisticas WHERE Nome = ?", (criptomoeda,))
             registro = cursor.fetchall()
@@ -82,7 +85,7 @@ def get_criptomoedas():
         
         # Converter os resultados para um formato JSON
         criptomoedas_json = []
-        with open('lista_de_criptomoedas.json', 'r') as f:
+        with open(os.path.join(CURRENT_DIRECTORY, 'lista_de_criptomoedas.json'), 'r') as f:
             lsta_de_criptomoedas = json.load(f)
         
         
