@@ -82,6 +82,7 @@ def criar_banco():
 
 
 def inserir_dados(criptomoeda, dados):
+    
     try:
         with sqlite3.connect(db) as conn:
             cursor = conn.cursor()

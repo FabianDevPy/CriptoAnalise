@@ -35,14 +35,34 @@ function gerar_tabela(cripto_data, table, previousPrice) {
   }
 }
 
+function adicionarGraficos(cripto_data) {
+
+  let grafico24h = document.createElement("img");
+  grafico24h.src = `${cripto_data["grafico_24h"]}`;
+
+  let grafico1m = document.createElement("img");
+  grafico1m.src = `${cripto_data["grafico_1m"]}`;
+
+    return `<div>${grafico24h} ${grafico1m}</div>`
+
+
+}
+
 function criar_cards(cripto_data) {
   console.log("criar_cards...");
   console.log(cripto_data);
+  // Selecione o card pelo ID ou por classe
+
+  console.log("-------------------------------------------");
+  console.log(`card_${cripto_data["Name"]}`);
+
   const valores_atuais = new Array();
   let tds = $(`#${cripto_data.Name}`).find("td");
+
   tds.each(function (index, element) {
     valores_atuais.push(element.textContent);
   });
+
   console.log("valores atuais:", valores_atuais);
 
   let cards = document.getElementById("cards");
@@ -77,8 +97,28 @@ function criar_cards(cripto_data) {
                 </div>    
           </div>
       </div>
+      <div id="chart_${cripto_data["Name"]}" class="modal">
+        <div class="modal-background"></div>
+   
+        
+            <button class="delete" aria-label="close"></button>
+        
+          <section class="modal-card-body content">
+         <img src="${cripto_data["grafico_24h"]}">
+         <img src="${cripto_data["grafico_1m"]}">>
+          </section>
+      </div>
   `;
+
   cards.append(card);
+  card.addEventListener("click", function () {
+    switchModal();
+  });
+
+  
+
+
+ 
 }
 
 function gerar_estatisticas(cripto_name) {
@@ -132,7 +172,7 @@ function drag() {
     if (isDragging) {
       var deltaY = event.clientY - startY;
       $("html, body").scrollTop($("html, body").scrollTop() - deltaY);
-      startY = event.clientY; 
+      startY = event.clientY;
       var deltaX = event.clientX - startX;
       // $("html, body").scroollLeft($("html, body").scroollLeft() - deltaX);
       console.log(deltaX);
@@ -242,6 +282,15 @@ function iniciar_tab3() {
       }
     });
 }
+const switchModal = () => {
+  const modal = document.querySelector(".modal");
+  const actualStyle = modal.style.display;
+  if (actualStyle == "block") {
+    modal.syle.diplay = "none";
+  } else {
+    modal.style.display = "bock";
+  }
+};
 
 $(document).ready(function () {
   const tabela = $("#dados-criptomoedas");
@@ -251,13 +300,14 @@ $(document).ready(function () {
 
   setInterval(function () {
     atualizarTabela(tabela, tab2);
-  }, 80000);
+  }, 180000);
 
   $(".reload").click(function () {
     atualizarTabela(tabela, tab2);
   });
 
   atualizarTabela(tabela, tab2);
+
   // scroll();
   // drag();
 });

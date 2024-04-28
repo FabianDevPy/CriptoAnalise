@@ -400,6 +400,25 @@ tr:hover {
   flex-direction: row;
   justify-content: space-between; ;
 }
+
+.modal{
+  display:none;
+  position:fixed;
+  z-index:1;
+  left:0;
+  height:100%;
+  width:100%;
+  overflow:hidden;
+  backround-color:rgba(0,0,0,0.4);
+  }
+
+  .modal .content{
+    background-color:white;   
+    width:70%;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    }
 @media only screen and (max-width: 600px) {
   #content_cards{
     flex-direction: column;

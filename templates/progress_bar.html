@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progresso da Requisição</title>
+    <style>
+        #progress-container {
+            width: 100%;
+            height: 30px;
+            background-color: #f3f3f3;
+            border: 1px solid #ccc;
+            position: relative;
+            margin-top: 20px;
+        }
+        #progress-bar {
+            height: 100%;
+            background-color: #072ef2;
+            width: 0%;
+            position: absolute;
+            transition: width 0.5s linear; /* Adiciona uma transição suave */
+        }
+    </style>
+</head>
+<body>
+
+<h1>Progresso da Requisição</h1>
+<div id="progress-container">
+    <div id="progress-bar"></div>
+    
+   
+</div>
+ <div id="moeda" style="display: none;">{{moeda}}</div>
+<script>
+    // Função para fazer a requisição e atualizar a barra de progresso
+    async function fazerRequisicao() {
+      const slug =  document.urlParams.get('moeda');
+      slug = document.getElementById("moeda").textContent;
+      console.log(slug);
+      const payload = {slug: slug};
+        // Define a URL da sua API
+        const url = 'http://localhost:5000/executar-rotina/' 
+        
+
+        // Exibe a barra de progresso
+        const progressBar = document.getElementById('progress-bar');
+        progressBar.style.width = '0%';
+        document.getElementById('progress-container').style.display = 'block';
+
+        try {
+            // Faz a requisição usando fetch
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Erro: ${response.statusText}`);
+            }
+
+            // Define os estágios intermediários (25%, 50%, 75%)
+            const stages = [25, 50, 75, 100];
+
+            // Atualiza a barra de progresso em cada estágio
+            for (const stage of stages) {
+                await new Promise(resolve => setTimeout(resolve, 500)); // Aguarda 500ms
+                progressBar.style.width = `${stage}%`;
+                if (stage === 100) {
+                    progressBar.style.backgroundColor = '#4caf50';
+                }
+            }
+
+            console.log('Requisição concluída com sucesso!');
+        } catch (error) {
+            // Caso ocorra algum erro na requisição, exibe no console
+            console.error('Erro:', error);
+        }
+    }
+
+    // Chama a função fazerRequisicao() quando a página carregar
+    fazerRequisicao();
+</script>
+
+</body>
+</html>
