@@ -6,5 +6,5 @@ __pycache__
 /market
 market
 *.json
-coinbase*.*
+
 main.py
