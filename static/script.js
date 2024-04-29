@@ -36,16 +36,13 @@ function gerar_tabela(cripto_data, table, previousPrice) {
 }
 
 function adicionarGraficos(cripto_data) {
-
   let grafico24h = document.createElement("img");
   grafico24h.src = `${cripto_data["grafico_24h"]}`;
 
   let grafico1m = document.createElement("img");
   grafico1m.src = `${cripto_data["grafico_1m"]}`;
 
-    return `<div>${grafico24h} ${grafico1m}</div>`
-
-
+  return `<div>${grafico24h} ${grafico1m}</div>`;
 }
 
 function criar_cards(cripto_data) {
@@ -97,28 +94,27 @@ function criar_cards(cripto_data) {
                 </div>    
           </div>
       </div>
-      <div id="chart_${cripto_data["Name"]}" class="modal">
-        <div class="modal-background"></div>
-   
-        
-            <button class="delete" aria-label="close"></button>
-        
-          <section class="modal-card-body content">
-         <img src="${cripto_data["grafico_24h"]}">
-         <img src="${cripto_data["grafico_1m"]}">>
-          </section>
-      </div>
+      
   `;
 
-  cards.append(card);
   card.addEventListener("click", function () {
-    switchModal();
+    // switchModal(cripto_data);
+    const modal = document.querySelector(".modal");
+    switchModal(cripto_data);
+    modal.innerHTML = `
+      <div class="modal-background"></div>    
+          <button class="delete" aria-label="close"></button>    
+          <section class="modal-card-body content">
+          <img src="${cripto_data["grafico_24h"]}">
+          <img src="${cripto_data["grafico_1m"]}">  
+    </div>`;
+
+    $(".modal-background").on("click", function () {
+      switchModal(cripto_data);
+    });
   });
 
-  
-
-
- 
+  cards.append(card);
 }
 
 function gerar_estatisticas(cripto_name) {
@@ -126,9 +122,10 @@ function gerar_estatisticas(cripto_name) {
     .then((response) => response.json())
     .then((cripto_data) => {
       criar_cards(cripto_data);
-
-      return true;
+      // startModal(cripto_data);
     });
+
+  return true;
 }
 
 function scroll() {
@@ -283,14 +280,26 @@ function iniciar_tab3() {
     });
 }
 const switchModal = () => {
-  const modal = document.querySelector(".modal");
-  const actualStyle = modal.style.display;
-  if (actualStyle == "block") {
-    modal.syle.diplay = "none";
+  const modal = $("#modal");
+
+  if (modal.css("display") === "none") {
+    modal.slideToggle( "slow" );
   } else {
-    modal.style.display = "bock";
+    modal.slideToggle( "slow" );
   }
 };
+
+function startModal(cripto_data) {
+  const cards = document.querySelectorAll(".max-w-xs.mx-auto");
+  console.log(cards);
+  cards.forEach((card) => {
+    card.addEventListener("click", function (event) {
+      console.log("Clicou no card:----->", event);
+
+      switchModal(cripto_data);
+    });
+  });
+}
 
 $(document).ready(function () {
   const tabela = $("#dados-criptomoedas");
