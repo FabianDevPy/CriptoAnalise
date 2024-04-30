@@ -117,7 +117,7 @@ def analise(criptomoeda):
 def get_criptomoedas():
     try:
         # Conexão com o banco de dados (substitua pelos seus detalhes de conexão)
-        conn = sqlite3.connect(os.path.join(CURRENT_DIRECTORY, 'criptomoedas.db')) as conn:
+        conn = sqlite3.connect(os.path.join(CURRENT_DIRECTORY, 'criptomoedas.db')) 
         cursor = conn.cursor()
         # Consulta SQL para obter os dados das criptomoedas
         query ='SELECT Name, Label, Price, Volume_24h, MAX(Timestamp) AS Max_Timestamp FROM criptomoedas GROUP BY Name;'
