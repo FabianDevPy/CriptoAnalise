@@ -2,16 +2,17 @@ from flask import Flask, render_template, request, url_for, make_response, send_
 from script import converter_timestamp, aware_utcnow
 from flask import jsonify
 import sqlite3
-from coinbase_api import get_crypto_data
 import time
 import datetime
 from datetime import timezone, timedelta
 import json
 import os
-from graficos_coinbase import ober_1mes, ober_24h
+from graficos_coinbase import obter_1mes, obter_24h
+from graficos_coinbase import gerar_grafico, obter_1mes, obter_24h, obter_1ano, obter_1hora, obter_1semana
+import pandas as pd
 
 import asyncio
-from graficos_coinbase import execute_routine
+from graficos_coinbase import get_crypto_data
 
 from PIL import Image
 import io
@@ -25,6 +26,10 @@ CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 app = Flask(__name__, static_folder=os.path.join(CURRENT_DIRECTORY, 'static'))
 #template folder
+@app.context_processor
+def inject_stage_and_region():
+    return dict(stage="alpha", region="NA")
+
 app.template_folder = os.path.join(CURRENT_DIRECTORY, 'templates')
 template_folder = app.template_folder
 CORS(app)
@@ -35,7 +40,7 @@ def dashboard():
 
 # @app.route("/grafico24h/<criptomoeda>")
 # def grafico24h(criptomoeda):
-#     grafico = ober_24h(criptomoeda, os.path.join(f'/graficos/{criptomoeda}_24h.png'))   
+#     grafico = obter_24h(criptomoeda, os.path.join(f'/graficos/{criptomoeda}_24h.png'))   
 #     return render_template("grafico24h.html", grafico=grafico)
 
 @app.route("/grafico24h/<criptomoeda>")
@@ -101,11 +106,7 @@ def analise(criptomoeda):
                 "grafico_24h":  grafico_24h,
                 'grafico_1m': grafico_1m
                
-                }
-                
-                
-                   
-                    
+                }                 
                     
             return registro_dict
             
@@ -202,7 +203,7 @@ def executar_rotina():
     try:
         loop = asyncio.new_event_loop()
         asyncio.set_event_loop(loop)
-        result = loop.run_until_complete(execute_routine())
+        result = loop.run_until_complete(get_crypto_data())
         return jsonify({'success': True, 'result': "result"}), 200
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -244,5 +245,47 @@ def servir_imagem(filename):
     return send_from_directory(os.path.join(app.static_folder, 'graficos'), filename)
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+
+
+
+
+
+async def preparar_dados(moeda, periodo):
+    data = await periodo(moeda)
+    data['timestamp'] = pd.to_datetime(data['timestamp'])
+    data.set_index('timestamp', inplace=True)
+    data.sort_index(inplace=True)
+    series = [{"name": f'{moeda}', "data": data['close'].tolist()}]
+    chart = {"type": 'line', "height": 600}
+    title = {
+        "text": 'Bitcoin Price (BTC-USD), {}'.format(periodo.__name__.replace('_', ' '))}
+    xAxis = {"categories": data.index.strftime('%H:%M').tolist()}
+    yAxis = {"title": {"text": 'Price (USD)'}}
+    payload = {'series': series, 'chart': chart,
+               'title': title, 'xAxis': xAxis, 'yAxis': yAxis}
+    return payload
+
+
+@app.route('/<moeda>')
+async def index(moeda, ):
+    payload_1ano = await preparar_dados(moeda, obter_1ano)
+    payload_1mes = await preparar_dados(moeda, obter_1mes)
+    payload_1hora = await preparar_dados(moeda, obter_1hora)
+    payload_1semana = await preparar_dados(moeda, obter_1semana)
+    payload_24h = await preparar_dados(moeda, obter_24h)
+
+    return render_template('graph.html',
+        chartID_1='chart_ID_1',
+        chartID_0='chart_ID_0',
+        chartID_2='chart_ID_2',
+        chartID_3='chart_ID_3',
+        chartID_4='chart_ID_4',
+        payload_1hora = payload_1hora,
+        payload_1semana = payload_1semana,
+        payload_1ano = payload_1ano,
+        payload_1mes = payload_1mes,
+        payload_24h = payload_24h,        
+        )
+
+if __name__ == "__main__":
+    app.run(debug=True, host='0.0.0.0', port=8080, passthrough_errors=True)

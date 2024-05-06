@@ -2,15 +2,17 @@ import requests
 import time
 from models import inserir_dados, get_cripto_analise
 from script import limpar_banco, criar_banco
-from graficos_coinbase import ober_1mes, ober_24h, gerar_grafico
+from graficos_coinbase import obter_1mes, obter_24h, gerar_grafico
 import asyncio
 import json
 import os
+from models import get_cripto_list
+import traceback
 
 global CURRENT_DIRECTORY 
 CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
    
-def fetch_data(url):
+async def fetch_data(url):
     try:
         response = requests.get(url)
         response.raise_for_status()  # Levanta uma exceção para respostas de erro HTTP
@@ -38,9 +40,17 @@ async def process_data(markets: list, criptomoedas: list = None):
     except Exception as e:
         print(e)
         
-        _lc_filtrada: list = ["Bitcoin", "Ethereum", "Solana", "Polkadot", "Stellar", "Tether", "Dogecoin", "Dai", "Cardano", "Litecoin", "Chainlink", "Binance USD", "Polygon"]
+        _lc_filtrada: list = ["Bitcoin", "Ethereum", "Solana", "Stellar", "Pepe", 
+                              "Dogecoin", "Cardano", "Litecoin", "Optimism",  "Polygon"]
+
+        lista = await get_cripto_list(_lc_filtrada)
+        print("\nLista de criptomoedas------------------------------\n ", lista)
+        
         with open(os.path.join(CURRENT_DIRECTORY, 'lista_de_criptomoedas.json'), 'w') as _lc:
+            
+            # print("\nLista de criptomoedas------------------------------\n ", lista)
             json.dump(_lc_filtrada, _lc)
+            
             
     try:
         with open(os.path.join(CURRENT_DIRECTORY, 'lista_de_criptomoedas_disponiveis.json'), 'r') as _lc:
@@ -48,8 +58,7 @@ async def process_data(markets: list, criptomoedas: list = None):
             
     except Exception as e:
         print(e)
-        lista_de_criptomoedas: list = await get_lista_de_criptomoedas(markets)
-        
+        lista_de_criptomoedas: list = await get_lista_de_criptomoedas(markets)        
         with open(os.path.join(CURRENT_DIRECTORY, 'lista_de_criptomoedas_disponiveis.json'), 'w') as _lc:
             json.dump(lista_de_criptomoedas, _lc)
         
@@ -67,35 +76,39 @@ async def process_data(markets: list, criptomoedas: list = None):
                 'Price': crypto.get('Price', 0),
                 'Volume_24h': crypto.get('Volume_24h', 0),
                 'Timestamp': crypto.get('Timestamp', 0)
-            }
-            
+            }            
             _analise = await get_cripto_analise(processed_data[name])
-            print(_analise)
-    
+            print(_analise)    
     return processed_data
+
+async def gerar_graficos_para_criptomoedas(criptomoedas):
+    tasks = [gerar_grafico(moeda=moeda) for moeda in criptomoedas]
+    retorno = await asyncio.gather(*tasks)
+    # with open (os.path.join(CURRENT_DIRECTORY, 'data.json'), 'w') as f:
+    #     json.dump( retorno, f)
+        
 
 async def main():
     try:
         url = 'https://www.worldcoinindex.com/apiservice/v2getmarkets?key=yTsY100fwhLAq98kro3wSSwyXTAku8vNFJQ&fiat=brl'
         while True:
-            markets = fetch_data(url)
-            processed_data = await process_data(markets) 
+            markets = await fetch_data(url)
+            processed_data = await process_data(markets) if markets else {}
             limpar_banco()
-            graph_list: list = []
-            
+            graph_list = []
+
             for currency, info in processed_data.items():
                 print(info["Label"])
-                graph_list.append( info["Label"])    
-                        
-                inserir_dados(currency.upper(), info)       
-            # time.sleep(60)  # Intervalo de 1 minuto
-            # Executar as tarefas assíncronas usando o loop de eventos padrão
-            tasks = [gerar_grafico(moeda=item) for item in graph_list]
-            await asyncio.gather(*tasks)
-            time.sleep(60)  # Intervalo de 1 minuto
+                graph_list.append(info["Label"])    
+                inserir_dados(currency.upper(), info)  
+            print(f"{graph_list}")   
+            # Chama a função externa para gerar os gráficos
+            await gerar_graficos_para_criptomoedas(graph_list)
+            await asyncio.sleep(120)  # Intervalo de 1 minuto
             
     except Exception as e:
         print(e)
+        print(traceback.format_exc())
                 
 if __name__ == "__main__":
     print("Executando...")

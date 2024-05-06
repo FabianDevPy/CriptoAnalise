@@ -5,8 +5,11 @@ import os
 global CURRENT_DIRECTORY
 CURRENT_DIRECTORY= os.path.dirname(os.path.abspath(__file__))
 db = os.path.join(CURRENT_DIRECTORY, 'criptomoedas.db')
+import pandas as pd
+import json
 
 async def get_cripto_list(lista_de_criptomoedas=None):
+    # Cria a tabela se ainda não existir
     try:
         # Conectar ao banco de dados de forma assíncrona
         async with aiosqlite.connect(db) as conn:
@@ -17,6 +20,7 @@ async def get_cripto_list(lista_de_criptomoedas=None):
                 )
                 ''')
             await conn.commit()
+            print("Tabela Cripto_list criada com sucesso.")
 
         # Checar se a criptomoeda já existe na tabela
         cursor = await conn.execute('SELECT * FROM Cripto_list')
@@ -28,14 +32,12 @@ async def get_cripto_list(lista_de_criptomoedas=None):
             for nome in lista_de_criptomoedas:
                 await conn.execute('INSERT INTO Cripto_list (Nome) VALUES (?)', (nome))
                 await conn.commit()
+            print("Criptomoedas inseridas na tabela Cripto_list com sucesso.")
             return lista_de_criptomoedas
         else:
             return None
     except Exception as e:
         return (f"Erro ao acessar banco de dados: {e}")
-
-# Função para criar o banco de dados e a tabela Criptomoedas
-
 
 def criar_banco():
     try:
@@ -78,8 +80,59 @@ def criar_banco():
     except sqlite3.Error as e:
         print("Erro ao criar o banco de dados:", e)
 
-# Função para inserir dados na tabela
+def salvar_dados_1m(crypto_data_1m):
+    # Salvar as informações no banco de dados
+    print("Salvando dados 1 mês no banco de dados...")
+    try:
+        conn = sqlite3.connect('criptomoedas.db')
+        c = conn.cursor()
+        c.execute('''CREATE TABLE IF NOT EXISTS CryptoData_1m
+                     (timestamp TEXT, low REAL, high REAL, open REAL, close REAL, volume REAL)''')
+        print("tabela CryptoData_1m criada")
+        # Converter DataFrame para lista de tuplas
+        data_to_insert = [tuple(row) for row in crypto_data_1m.itertuples(index=False)]
+        
+        # Inserir os dados na tabela
+        c.executemany('INSERT INTO CryptoData_1m VALUES (?,?,?,?,?,?,?)', data_to_insert)
+        conn.commit()
+        conn.close()
+          
+    except sqlite3.Error as e:
+        print("Erro ao inserir dados:", e)
+        return False
+    
+    return True
 
+def salvar_dados_24h(crypto_data_24h):
+    #salvar dataframe cripto_data_24h em um json com padas
+    df = pd.DataFrame(crypto_data_24h)
+
+    # Salvando o DataFrame em um arquivo JSON
+    df.to_json('dados.json', orient='records')
+        
+    # Salvar as informações no banco de dados
+    print("Salvando dados no banco de dados...")
+    try:
+        with sqlite3.connect(db) as conn:
+            c = conn.cursor()
+            c.execute('''CREATE TABLE IF NOT EXISTS CryptoData_24h
+                        (Nome TEXT, timestamp TEXT, low REAL, high REAL, open REAL, close REAL, volume REAL)''')
+            print("tabela CryptoData_24h criada")
+            # Converter DataFrame para lista de tuplas
+            data_to_insert = [tuple(row) for row in crypto_data_24h.itertuples(index=False)]
+            
+            # Inserir os dados na tabela
+            c.executemany('INSERT INTO CryptoData_24h VALUES (?,?,?,?,?,?,?)', data_to_insert)
+          
+    except sqlite3.Error as e:
+        print("Erro ao inserir dados:", e)
+        return False
+    except Exception as e:
+        print("Erro ao inserir dados:", e)
+        return False
+
+    print("Os dados foram 24h inseridos com sucesso.")
+    return True
 
 def inserir_dados(criptomoeda, dados):
     
@@ -92,7 +145,7 @@ def inserir_dados(criptomoeda, dados):
                               VALUES (?, ?, ?, ?, ?, ?)''',
                            (dados["Label"], dados["Name"], dados["Price"], dados["Volume_24h"], dados["Timestamp"], criptomoeda))
 
-            print(f"{criptomoeda} inseridos com sucesso.\n")
+            print(f"{criptomoeda} inseridos com sucesso.")
             # print(f'{dados}\n')
     # if no such table, already exists
     except sqlite3.OperationalError as e:
@@ -107,9 +160,9 @@ def inserir_dados(criptomoeda, dados):
 
 async def get_cripto_analise(data):
     Nome: str = data['Name']
-    print('\nAnalisando Criptomoeda:=====>\n', Nome)
+    # print('\nAnalisando Criptomoeda:=====>\n', Nome)
     
-    print("\nCriptomoeda: \n", data)
+    # print("\nCriptomoeda: \n", data)
     
     try:
         # Conectar ao banco de dados de forma assíncrona
@@ -142,6 +195,7 @@ async def get_cripto_analise(data):
             return result
     except sqlite3.Error as e:
         return f"Erro ao acessar banco de dados: {e}"
+
 
 if __name__ == "__main__":
 

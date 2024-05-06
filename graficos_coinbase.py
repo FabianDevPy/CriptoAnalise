@@ -4,8 +4,9 @@ import os
 import pandas as pd
 import aiohttp
 import matplotlib.pyplot as plt
+import traceback
+import json
 
-global CURRENT_DIRECTORY
 CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -32,88 +33,122 @@ async def get_crypto_data(product_id, start_date, end_date, granularity):
             "granularity": granularity
         }
         headers = {"content-type": "application/json"}
-
-        data = await fetch_data(url, params, headers)
-        results = data + results
-
-        start_date = next_date
+        try:
+            data = await fetch_data(url, params, headers)
+            if type(data) == list and type(results) == list:
+                results.extend(data)
+                start_date = next_date
+            else:
+                print(data)
+                print(f"Error getting data for {product_id}: {data}")
+                break
+        except:
+            # print_exc()
+            print(f"Error getting data for {product_id}: {data}")
+            break
 
     df = pd.DataFrame(data=results, columns=['timestamp', "low", "high", "open", "close", "volume"])
-    df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s')
-
+    df['timestamp'] = pd.to_datetime(df['timestamp'], unit='s')  # Converta o timestamp para o formato de data/hora
     return df
 
 
-def plot_crypto_data(data, title, save_path=None):
-    plt.figure(figsize=(10, 5))
-    plt.plot(data['timestamp'], data['close'], marker='o', linestyle='-')
-    plt.title(title)
-    plt.xlabel('Tempo')
-    plt.ylabel('Preço (USD)')
-    plt.xticks(rotation=45)
-    plt.grid(True)
-    plt.tight_layout()
-
-    if save_path:
-        plt.savefig(save_path)
-        plt.close()
-        return save_path
-    else:
-        plt.show()
-
-
-async def ober_24h(moeda, save_path=None):
+async def obter_24h(moeda):
     end_date = datetime.now()
     start_date_24h = end_date - timedelta(days=1)
+
     crypto_data_24h = await get_crypto_data(
         product_id=moeda,
         start_date=start_date_24h,
         end_date=end_date,
         granularity=900
     )
-    if save_path is None:
-        plot_crypto_data(crypto_data_24h, f"{moeda} nas Últimas 24 Horas: {start_date_24h.strftime('%H:%M')} a {end_date.strftime('%H:%M')}")
-    else:
-        png_path_24h = plot_crypto_data(crypto_data_24h, f"{moeda} nas Últimas 24 Horas: {start_date_24h.strftime('%D%M - %H:%M')} a {end_date.strftime('%D%M - %H:%M')}",
-                                        save_path=save_path)
-        return png_path_24h
+
+    if crypto_data_24h is None:
+        return None
+
+    return crypto_data_24h
 
 
-async def ober_1mes(moeda, save_path=None):
+async def obter_1mes(moeda):
     end_date = datetime.now()
     start_date_1m = end_date - timedelta(days=30)
+
     crypto_data_1m = await get_crypto_data(
         product_id=moeda,
         start_date=start_date_1m,
         end_date=end_date,
         granularity=86400
     )
-    if save_path is None:
-        plot_crypto_data(crypto_data_1m, f'{moeda} no Último Mês: {start_date_1m.strftime("%d/%m/%Y")} a {end_date.strftime("%d/%m/%Y")}')
-    else:
-        png_path_1m = plot_crypto_data(crypto_data_1m, f'{moeda} no Último Mês: {start_date_1m.strftime("%d/%m/%Y")} a {end_date.strftime("%d/%m/%Y")}',
-                                       save_path=save_path)
-        return png_path_1m
 
+    if crypto_data_1m is None:
+        return None
+  
+    return crypto_data_1m
 
-async def execute_routine(moeda='BTC-USD'):
+async def obter_1hora(moeda):
+    end_date = datetime.now()
+    start_date_1h = end_date - timedelta(hours=1)
+
+    crypto_data_1h = await get_crypto_data(
+        product_id=moeda,
+        start_date=start_date_1h,
+        end_date=end_date,
+        granularity=60  # Granularidade de 60 segundos para 1 hora
+    )
+
+    if crypto_data_1h is None:
+        return None
+
+    return crypto_data_1h
+
+async def obter_1semana(moeda):
+    end_date = datetime.now()
+    start_date_1w = end_date - timedelta(days=7)
+
+    crypto_data_1w = await get_crypto_data(
+        product_id=moeda,
+        start_date=start_date_1w,
+        end_date=end_date,
+        granularity=86400  # Granularidade de 86400 segundos para 1 dia (1 semana tem 7 dias)
+    )
+
+    if crypto_data_1w is None:
+        return None
+
+    return crypto_data_1w
+
+async def obter_1ano(moeda):
+    end_date = datetime.now()
+    start_date_1y = end_date - timedelta(days=365)
+
+    crypto_data_1y = await get_crypto_data(
+        product_id=moeda,
+        start_date=start_date_1y,
+        end_date=end_date,
+        granularity=86400  # Granularidade de 86400 segundos para 1 dia
+    )
+
+    if crypto_data_1y is None:
+        return None
+
+    return crypto_data_1y
+async def gerar_grafico(moeda='BTC-USD'):
     try:
-        await asyncio.gather(
-            ober_24h(moeda, f'{CURRENT_DIRECTORY}/static/graficos/{moeda}_24h.png'),
-            ober_1mes(moeda, f'{CURRENT_DIRECTORY}/static/graficos/{moeda}_1m.png')
-        )
-        return True
-    except Exception as e:
-        print(f"Error: {e}")
-        return False
+        result_24h, result_1m = await asyncio.gather(obter_24h(moeda), obter_1mes(moeda))
 
-async def gerar_grafico(moeda: str):
-    print(f"Gerando gráfico para {moeda}")
-    
-    try:
-        await execute_routine(moeda = moeda.upper())
+        if result_24h and result_1m:
+            series = [result_24h, result_1m]
+            print(f"Os dados de 24 horas foram inseridos com sucesso.")
+            return series
+        else:
+            print(f"Erro ao obter dados de {moeda}")
+            return []
+
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"Erro ao obter dados: {e}")
+        print(traceback.format_exc())
+        return []
+
 
 if __name__ == '__main__':
     asyncio.run(gerar_grafico(moeda='op-usd'))
