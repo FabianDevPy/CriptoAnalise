@@ -2,9 +2,25 @@
 
 
 $(document).ready(function() {
-  const carrosel = $(".carrossel")
-  carrosel.slick();
-  
+    const carrossel = $(".carrossel");
+
+    carrossel.slick({
+      slidesToShow: 1,
+      slidesToScroll: 1,
+      arrows: false,
+      fade: true,
+      asNavFor: '.slider-nav'
+    });
+    
+    $('.slider-nav').slick({
+      slidesToShow: 5,
+      slidesToScroll: 1,
+      asNavFor: '.carrossel', // Corrigido para '.carrossel'
+      dots: false,
+      centerMode: true,
+      focusOnSelect: true
+    });
+    
   $(chart_id_1).highcharts({
       chart: payload_1ano.chart,
       title: payload_1ano.title,

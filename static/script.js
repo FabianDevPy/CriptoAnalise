@@ -99,19 +99,21 @@ function criar_cards(cripto_data) {
 
   card.addEventListener("click", function () {
     // switchModal(cripto_data);
-    const modal = document.querySelector(".modal");
-    switchModal(cripto_data);
-    modal.innerHTML = `
-      <div class="modal-background"></div>    
-          <button class="delete" aria-label="close"></button>    
-          <section class="modal-card-body content">
-          <img src="${cripto_data["grafico_24h"]}">
-          <img src="${cripto_data["grafico_1m"]}">  
-    </div>`;
+    console.log(cripto_data);
+    window.location.href = "/" + cripto_data.Label;
+    // const modal = document.querySelector(".modal");
+    // switchModal(cripto_data);
+    // modal.innerHTML = `
+    //   <div class="modal-background"></div>    
+    //       <button class="delete" aria-label="close"></button>    
+    //       <section class="modal-card-body content">
+    //       <img src="${cripto_data["grafico_24h"]}">
+    //       <img src="${cripto_data["grafico_1m"]}">  
+    // </div>`;
 
-    $(".modal-background").on("click", function () {
-      switchModal(cripto_data);
-    });
+    // $(".modal-background").on("click", function () {
+    //   switchModal(cripto_data);
+    // });
   });
 
   cards.append(card);

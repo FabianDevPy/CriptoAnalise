@@ -7,7 +7,6 @@ import datetime
 from datetime import timezone, timedelta
 import json
 import os
-from graficos_coinbase import obter_1mes, obter_24h
 from graficos_coinbase import gerar_grafico, obter_1mes, obter_24h, obter_1ano, obter_1hora, obter_1semana
 import pandas as pd
 
@@ -176,9 +175,9 @@ def get_criptomoeda(criptomoeda):
         hora_atual = aware_utcnow().strftime("%H:%M:%S")        
 
         # Obtenha a data e hora atual
-        data_atual = datetime.datetime.now().strftime("%Y-%m-%dT")
+        data_atual = datetime.datetime.now().strftime("'%Y-%m-%d %H:%M'")
         
-        start_date = data_atual + '00:00:00'
+        start_date = data_atual + '00:00:00 -03:00'
         
         # Concatene a data e hora atual com a hora atual formatada
         end_date = data_atual + hora_atual
@@ -216,29 +215,7 @@ def progresso():
     # return send_file(progress_bar_path)
 from flask import send_from_directory
 
-# Rota para servir imagens de 24 horas
-# @app.route('/graficos/<nome_moeda>/24h')
-# def enviar_grafico_24h(nome_moeda):
-    
-#     return send_from_directory(directory='caminho/para/static/graficos',filename= f'{nome_moeda}_24h.png')
 
-# # Rota para servir imagens de 1 mês
-# @app.route('/graficos/<nome_moeda>/1m')
-# def enviar_grafico_1m(nome_moeda):  
-#     nome_moeda = nome_moeda.replace('-BRL', '-USD')
-
-#     with open (f'{CURRENT_DIRECTORY}/static/graficos/{nome_moeda}_1m.png', 'rb') as image:        
-#         image_name = image.filename.split(".")[0] + ".png"
-#         image = Image.open(image)
-#         image = image.convert("RGB")
-#         byte_io=io.BytesIO()
-#         image.save(byte_io,"PNG" )
-#         byte_io.seek(0)
-#         response=Response(byte_io, content_type='image/png')
-#         response.headers.set('Content-Disposition', 'attachment', filename={image_name})
-#         print(response.headers)
-   
-#     return response
 
 @app.route('/graficos/<path:filename>')
 def servir_imagem(filename):
@@ -259,10 +236,38 @@ async def preparar_dados(moeda, periodo):
     chart = {"type": 'line', "height": 600}
     title = {
         "text": 'Bitcoin Price (BTC-USD), {}'.format(periodo.__name__.replace('_', ' '))}
-    xAxis = {"categories": data.index.strftime('%H:%M').tolist()}
+    xAxis = {"categories": data.index.strftime('%Y-%m-%d %H:%M').tolist(), "title": {"text": 'Date'},"visible": False}
     yAxis = {"title": {"text": 'Price (USD)'}}
     payload = {'series': series, 'chart': chart,
                'title': title, 'xAxis': xAxis, 'yAxis': yAxis}
+    return payload
+
+async def preparar_dados_2(moeda):
+    
+    payload_1ano = await preparar_dados_2(moeda)
+    payload_1mes = await preparar_dados_2(moeda,)
+    payload_1hora = await preparar_dados_2(moeda,)
+    payload_1semana = await preparar_dados_2(moeda,)
+    payload_24h = await preparar_dados_2(moeda,)
+
+ 
+    
+    data = [payload_1ano, payload_1mes, payload_1hora, payload_1semana, payload_24h]
+
+    
+    data['timestamp'] = pd.to_datetime(data['timestamp'])
+    data.set_index('timestamp', inplace=True)
+    data.sort_index(inplace=True)
+    series = [{"name": f'{moeda}', "data": data['close'].tolist()}]
+    chart = {"type": 'line', "height": 600}
+    title = {
+        "text": 'Bitcoin Price (BTC-USD), {}'.format(periodo.__name__.replace('_', ' '))}
+    xAxis = {"categories": data.index.strftime('%Y-%m-%d %H:%M').tolist()}
+    yAxis = {"title": {"text": 'Price (USD)'}}
+    
+    payload = {'series': series, 'chart': chart,
+               'title': title, 'xAxis': xAxis, 'yAxis': yAxis}
+    
     return payload
 
 
@@ -275,17 +280,35 @@ async def index(moeda, ):
     payload_24h = await preparar_dados(moeda, obter_24h)
 
     return render_template('graph.html',
-        chartID_1='chart_ID_1',
-        chartID_0='chart_ID_0',
-        chartID_2='chart_ID_2',
-        chartID_3='chart_ID_3',
-        chartID_4='chart_ID_4',
-        payload_1hora = payload_1hora,
-        payload_1semana = payload_1semana,
-        payload_1ano = payload_1ano,
-        payload_1mes = payload_1mes,
-        payload_24h = payload_24h,        
+    chartID_1='chart_ID_1',
+    chartID_0='chart_ID_0',
+    chartID_2='chart_ID_2',
+    chartID_3='chart_ID_3',
+    chartID_4='chart_ID_4',
+    payload_1hora = payload_1hora,
+    payload_1semana = payload_1semana,
+    payload_1ano = payload_1ano,
+    payload_1mes = payload_1mes,
+    payload_24h = payload_24h,        
+    )
+
+   
+    
+
+
+@app.route('/all/<moeda>')
+async def index_all(moeda):
+    lista_payload = await preparar_dados_2(moeda)
+ 
+    
+    return render_template('all_graph.html',
+        chartID_1='chart_all_ID',        
+        payload = lista_payload
+             
         )
+
+
+    
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=8080, passthrough_errors=True)
